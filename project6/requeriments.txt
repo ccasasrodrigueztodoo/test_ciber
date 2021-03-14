@@ -1,0 +1,2 @@
+django == 2.2.15
+django-import-export == 2.5.0
