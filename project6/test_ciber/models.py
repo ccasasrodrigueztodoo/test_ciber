@@ -1,6 +1,8 @@
 from django.db import models
 from django.utils import timezone
 import os, pandas as pd
+from jsonfield import JSONField
+import json
 
 # Create your models here.
 
@@ -8,6 +10,7 @@ class FilesAdmin(models.Model):
     name = models.CharField(max_length=50)
     upload_date = models.DateField(default=timezone.now)
     adminupload =  models.FileField(upload_to='media', null=False)
+    res = JSONField(default='{}')
 
     def __str__(self):
         return self.name
@@ -16,12 +19,20 @@ class FilesAdmin(models.Model):
     def read_file(self):
         if self.adminupload: 
             a = self.adminupload
-            df = pd.read_excel(a, engine='pyxlsb')
-            print(df)
-            print(type(df))
-            dd = pd.DataFrame()
-            print('hello')
-            print(dd)
+            df = pd.read_excel(a, engine='pyxlsb')     
+            arr = df.to_numpy()
+            total = df['cantidad de elementos'].sum()
+            total_price  = df['precio'].sum()
+            average = (df['precio'].sum() / df['cantidad de elementos'].count())
+            values = dict(elementos = total,  promedio= average )
+            self.res = json.dumps(values, sort_keys=True)
+            for line in arr:
+                serie_number = line[0]
+                amount_elements = line[1]
+                price = line[2]
+                Stock.objects.create(serie_number=serie_number, amount_elements=amount_elements, price=price)
+
+                    
 
 
         
